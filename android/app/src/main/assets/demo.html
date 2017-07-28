@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <script type="text/javascript" src="js/js-bridge.js"></script>
+    <script type="text/javascript">
+
+	function onGetValueClick() {
+		var params = {
+			"a" : "apple tree=+&?",
+			"b" : 2
+		};
+		JSBridge.request("add", params, function(result) {
+		    for(var key in result) {
+                console.log("属性：" + key + ",值："+ result[key]);
+            }
+		});
+	}
+
+    </script>
+    <title>Insert title here</title>
+</head>
+
+<body>
+<button onclick="onGetValueClick();">Get Value</button>
+<div id="result_div"></div>
+</body>
+</html>
