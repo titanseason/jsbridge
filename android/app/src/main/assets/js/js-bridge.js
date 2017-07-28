@@ -15,12 +15,13 @@ function communicateWithAppByIframe(hrefstr) {
     $iframe.style.display = 'none';
     setTimeout(function () {
         document.body.removeChild($iframe);
-    }, 50);
+    }, 100);
     $iframe.src = hrefstr;
     document.body.appendChild($iframe);
 }
 
 var jsbrideMethodId = 0;
+var JSBridgeMethodMap = {};
 
 var JSBridge = {
 	/**
@@ -34,10 +35,60 @@ var JSBridge = {
 	 *            回调，function(map);
 	 */
 	request : function(method, params, callback) {
-		jsbrideMethodId = jsbrideMethodId + 1;
-		var methodIdString = method + "_" + jsbrideMethodId;
-		JSBridgeMethodMap[methodIdString] = callback;
+        jsbrideMethodId = jsbrideMethodId + 1; // Must be at the first line
+        var url = JSBridge.generateUrl(method, params);
 
+		if (jsbridge) { // 客户端注入的对象
+	        console.log("已经注入jsbridge了");
+			var result = jsbridge.request(url);
+			JSBridge.response(methodIdString, eval('(' + result + ')'))
+			return;
+		} else {
+		    // put callback to map
+		    var methodIdString = method + "_" + jsbrideMethodId;
+		    JSBridgeMethodMap[methodIdString] = callback;
+
+	    	communicateWithAppByIframe(url);
+		}
+	},
+
+	/**
+	 * 客户端代码，调用JS方法
+	 *
+	 * @param methodId
+	 *            方法ID，即request时，参数jsbrideMethodId的值
+	 * @param params
+	 *            回调的值，Map类型
+	 */
+	response : function(methodId, result) {
+		var callback = JSBridgeMethodMap[methodId];
+		if (callback) {
+			delete JSBridgeMethodMap[methodId];
+			callback(result);
+		}
+	},
+
+    /**
+     * Get value from app directly.
+     *
+	 * @param method
+	 *            需要调用的方法名
+	 * @param params
+	 *            参数，Map类型
+	 *
+	 * @return The result value. (string)
+     */
+	getValue : function(method, params) {
+	    if (jsbridge) { // 客户端注入的对象
+	        console.log("已经注入jsbridge了");
+	        var url = JSBridge.generateUrl(method, params);
+	        return jsbridge.getValue(url);
+	    }
+	    return undefined;
+	},
+
+	generateUrl : function(method, params){
+		var methodIdString = method + "_" + jsbrideMethodId;
 		var url = "jsbridge://" + method;
 		// 拼接参数
 		if (params) {
@@ -58,35 +109,7 @@ var JSBridge = {
 		} else {
 			url += "?";
 		}
-		url += "jsbridgeMethodId=" + methodIdString;
-
-		if (jsbridge) { // 客户端注入的对象
-			var result = jsbridge.request(url);
-			JSBridge.response(methodIdString, eval('(' + result + ')'))
-			return;
-		} else {
-	    	communicateWithAppByIframe(url);
-		}
-	},
-
-	/**
-	 * 客户端代码，调用JS方法
-	 *
-	 * @param methodId
-	 *            方法ID，即request时，参数jsbrideMethodId的值
-	 * @param params
-	 *            回调的值，Map类型
-	 */
-	response : function(methodId, result) {
-		var callback = JSBridgeMethodMap[methodId];
-		if (callback) {
-			delete JSBridgeMethodMap[methodId];
-			callback(result);
-		}
+		return url + "jsbridgeMethodId=" + methodIdString;
 	}
 };
 
-/**
- * 回调方法MAP
- */
-var JSBridgeMethodMap = {};

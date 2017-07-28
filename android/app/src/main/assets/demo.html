@@ -6,9 +6,10 @@
     <script type="text/javascript" src="js/js-bridge.js"></script>
     <script type="text/javascript">
 
-	function onGetValueClick() {
+	function onGetValueWithCallbackClick() {
+	    console.log("Get Value With Callback");
 		var params = {
-			"a" : "apple tree=+&?",
+			"a" : "With callback =+&? ",
 			"b" : 2
 		};
 		JSBridge.request("add", params, function(result) {
@@ -16,14 +17,42 @@
                 console.log("属性：" + key + ",值："+ result[key]);
             }
 		});
+	};
+
+	function onGetValueClickDirect() {
+	    console.log("Get Value Direct");
+	    var params = {
+			"a" : "Test Direct=+&?",
+			"b" : 100
+		};
+		var result = JSBridge.getValue("add", params);
+		if(result) {
+		    console.log(result);
+        } else {
+            console.log("result is undefined");
+        }
 	}
 
+
     </script>
+
+    <style>
+        li { margin-top: 40px; }
+
+    </style>
+
     <title>Insert title here</title>
 </head>
 
 <body>
-<button onclick="onGetValueClick();">Get Value</button>
-<div id="result_div"></div>
+<ul>
+    <li>
+        <button onclick="onGetValueWithCallbackClick();">Get Value With Callback</button>
+    </li>
+    <li>
+        <button onclick="onGetValueClickDirect();">Get Value Direct</button>
+    </li>
+    <div id="result_div"></div>
+</ul>
 </body>
 </html>

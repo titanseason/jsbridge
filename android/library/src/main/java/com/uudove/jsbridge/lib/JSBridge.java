@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -61,6 +61,13 @@ public class JSBridge {
 
     @JavascriptInterface
     public final String request(String url) {
+        Log.d("JSBridge", url);
+        return request(url, mOnRequestListener);
+    }
+
+    @JavascriptInterface
+    public final String getValue(String url) {
+        Log.d("JSBridge", url);
         return request(url, mOnRequestListener);
     }
 
